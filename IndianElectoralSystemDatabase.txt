@@ -1,0 +1,541 @@
+mysql> create database IndElecSys;
+Query OK, 1 row affected (0.03 sec)
+
+mysql> use IndElecSys;
+Database changed
+mysql> CREATE TABLE Constituency (    Constituency_ID INT AUTO_INCREMENT PRIMARY KEY,    Constituency_Name VARCHAR(50) NOT NULL,    State VARCHAR(50) NOT NULL);
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> describe Constituency;
++-------------------+-------------+------+-----+---------+----------------+
+| Field             | Type        | Null | Key | Default | Extra          |
++-------------------+-------------+------+-----+---------+----------------+
+| Constituency_ID   | int         | NO   | PRI | NULL    | auto_increment |
+| Constituency_Name | varchar(50) | NO   |     | NULL    |                |
+| State             | varchar(50) | NO   |     | NULL    |                |
++-------------------+-------------+------+-----+---------+----------------+
+3 rows in set (0.03 sec)
+
+mysql> CREATE TABLE Party (    Party_ID INT AUTO_INCREMENT PRIMARY KEY,    Party_Name VARCHAR(50) NOT NULL,    Symbol VARCHAR(255));
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> describe Party;
++------------+--------------+------+-----+---------+----------------+
+| Field      | Type         | Null | Key | Default | Extra          |
++------------+--------------+------+-----+---------+----------------+
+| Party_ID   | int          | NO   | PRI | NULL    | auto_increment |
+| Party_Name | varchar(50)  | NO   |     | NULL    |                |
+| Symbol     | varchar(255) | YES  |     | NULL    |                |
++------------+--------------+------+-----+---------+----------------+
+3 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Voter (    Voter_ID INT AUTO_INCREMENT PRIMARY KEY,    Voter_Name VARCHAR(50) NOT NULL,    Age INT CHECK (Age >= 18),    Gender VARCHAR(10),    Constituency_ID INT,    Address VARCHAR(100),    Aadhar_Number VARCHAR(12) UNIQUE NOT NULL,    Phone_Number VARCHAR(10) UNIQUE,    FOREIGN KEY (Constituency_ID) REFERENCES Constituency(Constituency_ID));
+Query OK, 0 rows affected (0.08 sec)
+
+mysql> describe Voter;
++-----------------+--------------+------+-----+---------+----------------+
+| Field           | Type         | Null | Key | Default | Extra          |
++-----------------+--------------+------+-----+---------+----------------+
+| Voter_ID        | int          | NO   | PRI | NULL    | auto_increment |
+| Voter_Name      | varchar(50)  | NO   |     | NULL    |                |
+| Age             | int          | YES  |     | NULL    |                |
+| Gender          | varchar(10)  | YES  |     | NULL    |                |
+| Constituency_ID | int          | YES  | MUL | NULL    |                |
+| Address         | varchar(100) | YES  |     | NULL    |                |
+| Aadhar_Number   | varchar(12)  | NO   | UNI | NULL    |                |
+| Phone_Number    | varchar(10)  | YES  | UNI | NULL    |                |
++-----------------+--------------+------+-----+---------+----------------+
+8 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Election (    Election_ID INT AUTO_INCREMENT PRIMARY KEY,    Election_Type VARCHAR(50) NOT NULL,    Date DATE NOT NULL,    Constituency_ID INT,    Total_Voters INT,    FOREIGN KEY (Constituency_ID) REFERENCES Constituency(Constituency_ID));
+Query OK, 0 rows affected (0.08 sec)
+
+mysql> describe Election;
++-----------------+-------------+------+-----+---------+----------------+
+| Field           | Type        | Null | Key | Default | Extra          |
++-----------------+-------------+------+-----+---------+----------------+
+| Election_ID     | int         | NO   | PRI | NULL    | auto_increment |
+| Election_Type   | varchar(50) | NO   |     | NULL    |                |
+| Date            | date        | NO   |     | NULL    |                |
+| Constituency_ID | int         | YES  | MUL | NULL    |                |
+| Total_Voters    | int         | YES  |     | NULL    |                |
++-----------------+-------------+------+-----+---------+----------------+
+5 rows in set (0.03 sec)
+
+mysql> CREATE TABLE Candidate (    Candidate_ID INT AUTO_INCREMENT PRIMARY KEY,    Candidate_Name VARCHAR(50) NOT NULL,    Party_ID INT,    Election_ID INT,    Constituency_ID INT,    Total_Votes INT DEFAULT 0,    FOREIGN KEY (Party_ID) REFERENCES Party(Party_ID),    FOREIGN KEY (Election_ID) REFERENCES Election(Election_ID),    FOREIGN KEY (Constituency_ID) REFERENCES Constituency(Constituency_ID));
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> describe Candidate;
++-----------------+-------------+------+-----+---------+----------------+
+| Field           | Type        | Null | Key | Default | Extra          |
++-----------------+-------------+------+-----+---------+----------------+
+| Candidate_ID    | int         | NO   | PRI | NULL    | auto_increment |
+| Candidate_Name  | varchar(50) | NO   |     | NULL    |                |
+| Party_ID        | int         | YES  | MUL | NULL    |                |
+| Election_ID     | int         | YES  | MUL | NULL    |                |
+| Constituency_ID | int         | YES  | MUL | NULL    |                |
+| Total_Votes     | int         | YES  |     | 0       |                |
++-----------------+-------------+------+-----+---------+----------------+
+6 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Voting_Record (    Vote_ID INT AUTO_INCREMENT PRIMARY KEY,    Voter_ID INT,    Candidate_ID INT,    Election_ID INT,    Date DATE,    Time TIME,    FOREIGN KEY (Voter_ID) REFERENCES Voter(Voter_ID),    FOREIGN KEY (Candidate_ID) REFERENCES Candidate(Candidate_ID),    FOREIGN KEY (Election_ID) REFERENCES Election(Election_ID));
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> describe Voting_Record;
++--------------+------+------+-----+---------+----------------+
+| Field        | Type | Null | Key | Default | Extra          |
++--------------+------+------+-----+---------+----------------+
+| Vote_ID      | int  | NO   | PRI | NULL    | auto_increment |
+| Voter_ID     | int  | YES  | MUL | NULL    |                |
+| Candidate_ID | int  | YES  | MUL | NULL    |                |
+| Election_ID  | int  | YES  | MUL | NULL    |                |
+| Date         | date | YES  |     | NULL    |                |
+| Time         | time | YES  |     | NULL    |                |
++--------------+------+------+-----+---------+----------------+
+6 rows in set (0.00 sec)
+
+mysql> INSERT INTO Constituency (Constituency_Name, State)
+    -> VALUES
+    -> ('Bengaluru Central', 'Karnataka'),
+    -> ('Mumbai South', 'Maharashtra'),
+    -> ('Kolkata North', 'West Bengal'),
+    -> ('Chennai North', 'Tamil Nadu'),
+    -> ('Delhi South', 'Delhi');
+Query OK, 5 rows affected (0.05 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> select * from Constituency;
++-----------------+-------------------+-------------+
+| Constituency_ID | Constituency_Name | State       |
++-----------------+-------------------+-------------+
+|               1 | Bengaluru Central | Karnataka   |
+|               2 | Mumbai South      | Maharashtra |
+|               3 | Kolkata North     | West Bengal |
+|               4 | Chennai North     | Tamil Nadu  |
+|               5 | Delhi South       | Delhi       |
++-----------------+-------------------+-------------+
+5 rows in set (0.01 sec)
+
+mysql> INSERT INTO Party (Party_Name)
+    -> VALUES
+    -> ('Indian National Congress'),
+    -> ('Bharatiya Janata Party'),
+    -> ('Aam Aadmi Party'),
+    -> ('Shiv Sena'),
+    -> ('Trinamool Congress');
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> select * from Party;
++----------+--------------------------+--------+
+| Party_ID | Party_Name               | Symbol |
++----------+--------------------------+--------+
+|        1 | Indian National Congress | NULL   |
+|        2 | Bharatiya Janata Party   | NULL   |
+|        3 | Aam Aadmi Party          | NULL   |
+|        4 | Shiv Sena                | NULL   |
+|        5 | Trinamool Congress       | NULL   |
++----------+--------------------------+--------+
+5 rows in set (0.00 sec)
+
+mysql> INSERT INTO Voter (Voter_Name, Age, Gender, Constituency_ID)
+    -> VALUES
+    -> ('Amit Kumar', 35, 'M', 1),
+    -> ('Sunita Sharma', 29, 'F', 2),
+    -> ('Rajesh Gupta', 45, 'M', 3),
+    -> ('Neha Verma', 30, 'F', 4),
+    -> ('Arjun Patel', 40, 'M', 5);
+ERROR 1364 (HY000): Field 'Aadhar_Number' doesn't have a default value
+mysql> INSERT INTO Voter (Voter_Name, Age, Gender, Constituency_ID, Address, Aadhar_Number, Phone_Number)
+    -> VALUES
+    -> ('John Doe', 25, 'Male', 1, '123 Street, Bengaluru', '123456789012', '9876543210'),
+    -> ('Jane Doe', 30, 'Female', 2, '456 Avenue, Mumbai', '987654321098', '8765432109'),
+    -> ('Raj Patel', 35, 'Male', 3, '789 Road, Kolkata', '112233445566', '7654321098'),
+    -> ('Sara Khan', 28, 'Female', 4, '101 Block, Chennai', '998877665544', '6543210987'),
+    -> ('Amit Kumar', 40, 'Male', 5, '202 Sector, Delhi', '443322110099', '5432109876');
+Query OK, 5 rows affected (0.02 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> select * from Voter;
++----------+------------+------+--------+-----------------+-----------------------+---------------+--------------+
+| Voter_ID | Voter_Name | Age  | Gender | Constituency_ID | Address               | Aadhar_Number | Phone_Number |
++----------+------------+------+--------+-----------------+-----------------------+---------------+--------------+
+|        1 | John Doe   |   25 | Male   |               1 | 123 Street, Bengaluru | 123456789012  | 9876543210   |
+|        2 | Jane Doe   |   30 | Female |               2 | 456 Avenue, Mumbai    | 987654321098  | 8765432109   |
+|        3 | Raj Patel  |   35 | Male   |               3 | 789 Road, Kolkata     | 112233445566  | 7654321098   |
+|        4 | Sara Khan  |   28 | Female |               4 | 101 Block, Chennai    | 998877665544  | 6543210987   |
+|        5 | Amit Kumar |   40 | Male   |               5 | 202 Sector, Delhi     | 443322110099  | 5432109876   |
++----------+------------+------+--------+-----------------+-----------------------+---------------+--------------+
+5 rows in set (0.03 sec)
+
+
+mysql> INSERT INTO Election (Election_Type, Date, Constituency_ID, Total_Voters)
+    -> VALUES
+    -> ('General', '2024-05-01', 1, 10000),
+    -> ('General', '2024-05-02', 2, 20000),
+    -> ('General', '2024-05-03', 3, 15000),
+    -> ('General', '2024-05-04', 4, 18000),
+    -> ('General', '2024-05-05', 5, 12000);
+Query OK, 5 rows affected (0.02 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> select * from Election;
++-------------+---------------+------------+-----------------+--------------+
+| Election_ID | Election_Type | Date       | Constituency_ID | Total_Voters |
++-------------+---------------+------------+-----------------+--------------+
+|           1 | General       | 2024-05-01 |               1 |        10000 |
+|           2 | General       | 2024-05-02 |               2 |        20000 |
+|           3 | General       | 2024-05-03 |               3 |        15000 |
+|           4 | General       | 2024-05-04 |               4 |        18000 |
+|           5 | General       | 2024-05-05 |               5 |        12000 |
++-------------+---------------+------------+-----------------+--------------+
+5 rows in set (0.01 sec)
+
+mysql> INSERT INTO Candidate (Candidate_Name, Party_ID, Election_ID, Constituency_ID)
+    -> VALUES
+    -> ('Alice Smith', 1, 1, 1),
+    -> ('Bob Johnson', 2, 2, 2),
+    -> ('Chandra Gupta', 3, 3, 3),
+    -> ('Divya Sharma', 4, 4, 4),
+    -> ('Esha Reddy', 5, 5, 5);
+Query OK, 5 rows affected (0.03 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> select * from Candidate;
++--------------+----------------+----------+-------------+-----------------+-------------+
+| Candidate_ID | Candidate_Name | Party_ID | Election_ID | Constituency_ID | Total_Votes |
++--------------+----------------+----------+-------------+-----------------+-------------+
+|           11 | Alice Smith    |        1 |           1 |               1 |           0 |
+|           12 | Bob Johnson    |        2 |           2 |               2 |           0 |
+|           13 | Chandra Gupta  |        3 |           3 |               3 |           0 |
+|           14 | Divya Sharma   |        4 |           4 |               4 |           0 |
+|           15 | Esha Reddy     |        5 |           5 |               5 |           0 |
++--------------+----------------+----------+-------------+-----------------+-------------+
+5 rows in set (0.00 sec)
+
+mysql> INSERT INTO Voting_Record (Voter_ID, Election_ID, Date, Time)VALUES
+    -> (1, 1, '2024-05-01', '09:00:00'),
+    -> (2, 1, '2024-05-01', '10:00:00'),
+    -> (3, 1, '2024-05-01', '11:00:00'),
+    -> (4, 1, '2024-05-01', '12:00:00'),
+    -> (5, 1, '2024-05-01', '13:00:00');
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> select * from Voting_Record;
++---------+----------+--------------+-------------+------------+----------+
+| Vote_ID | Voter_ID | Candidate_ID | Election_ID | Date       | Time     |
++---------+----------+--------------+-------------+------------+----------+
+|      11 |        1 |         NULL |           1 | 2024-05-01 | 09:00:00 |
+|      12 |        2 |         NULL |           1 | 2024-05-01 | 10:00:00 |
+|      13 |        3 |         NULL |           1 | 2024-05-01 | 11:00:00 |
+|      14 |        4 |         NULL |           1 | 2024-05-01 | 12:00:00 |
+|      15 |        5 |         NULL |           1 | 2024-05-01 | 13:00:00 |
++---------+----------+--------------+-------------+------------+----------+
+5 rows in set (0.02 sec)
+
+mysql> -- DDL Commands
+mysql> ALTER TABLE Voter ADD Email VARCHAR(100);
+Query OK, 0 rows affected (0.07 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+ use near 'decribe Voter' at line 1
+
+mysql> describe Voter;
++-----------------+--------------+------+-----+---------+----------------+
+| Field           | Type         | Null | Key | Default | Extra          |
++-----------------+--------------+------+-----+---------+----------------+
+| Voter_ID        | int          | NO   | PRI | NULL    | auto_increment |
+| Voter_Name      | varchar(50)  | NO   |     | NULL    |                |
+| Age             | int          | YES  |     | NULL    |                |
+| Gender          | varchar(10)  | YES  |     | NULL    |                |
+| Constituency_ID | int          | YES  | MUL | NULL    |                |
+| Address         | varchar(100) | YES  |     | NULL    |                |
+| Aadhar_Number   | varchar(12)  | NO   | UNI | NULL    |                |
+| Phone_Number    | varchar(10)  | YES  | UNI | NULL    |                |
+| Email           | varchar(100) | YES  |     | NULL    |                |
++-----------------+--------------+------+-----+---------+----------------+
+9 rows in set (0.01 sec)
+
+mysql> -- DML commands
+mysql> UPDATE Voter
+    -> SET Age = 36
+    -> WHERE Voter_ID = 1;
+Query OK, 1 row affected (0.04 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from Voter;
++----------+------------+------+--------+-----------------+-----------------------+---------------+--------------+-------+
+| Voter_ID | Voter_Name | Age  | Gender | Constituency_ID | Address               | Aadhar_Number | Phone_Number | Email |
++----------+------------+------+--------+-----------------+-----------------------+---------------+--------------+-------+
+|        1 | John Doe   |   36 | Male   |               1 | 123 Street, Bengaluru | 123456789012  | 9876543210   | NULL  |
+|        2 | Jane Doe   |   30 | Female |               2 | 456 Avenue, Mumbai    | 987654321098  | 8765432109   | NULL  |
+|        3 | Raj Patel  |   35 | Male   |               3 | 789 Road, Kolkata     | 112233445566  | 7654321098   | NULL  |
+|        4 | Sara Khan  |   28 | Female |               4 | 101 Block, Chennai    | 998877665544  | 6543210987   | NULL  |
+|        5 | Amit Kumar |   40 | Male   |               5 | 202 Sector, Delhi     | 443322110099  | 5432109876   | NULL  |
++----------+------------+------+--------+-----------------+-----------------------+---------------+--------------+-------+
+5 rows in set (0.00 sec)
+
+mysql> DELETE FROM Candidate
+    -> WHERE Candidate_ID = 5;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from Candidate;
++--------------+----------------+----------+-------------+-----------------+-------------+
+| Candidate_ID | Candidate_Name | Party_ID | Election_ID | Constituency_ID | Total_Votes |
++--------------+----------------+----------+-------------+-----------------+-------------+
+|           11 | Alice Smith    |        1 |           1 |               1 |           0 |
+|           12 | Bob Johnson    |        2 |           2 |               2 |           0 |
+|           13 | Chandra Gupta  |        3 |           3 |               3 |           0 |
+|           14 | Divya Sharma   |        4 |           4 |               4 |           0 |
+|           15 | Esha Reddy     |        5 |           5 |               5 |           0 |
++--------------+----------------+----------+-------------+-----------------+-------------+
+5 rows in set (0.00 sec)
+
+mysql> -- TCL Commands
+mysql> BEGIN;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> UPDATE Voting_Record SET Candidate_ID = 1 WHERE Vote_ID = 5;
+Query OK, 0 rows affected (0.02 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+mysql> ROLLBACK;  -- This will undo the above update
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from Voting_Record;
++---------+----------+--------------+-------------+------------+----------+
+| Vote_ID | Voter_ID | Candidate_ID | Election_ID | Date       | Time     |
++---------+----------+--------------+-------------+------------+----------+
+|      11 |        1 |         NULL |           1 | 2024-05-01 | 09:00:00 |
+|      12 |        2 |         NULL |           1 | 2024-05-01 | 10:00:00 |
+|      13 |        3 |         NULL |           1 | 2024-05-01 | 11:00:00 |
+|      14 |        4 |         NULL |           1 | 2024-05-01 | 12:00:00 |
+|      15 |        5 |         NULL |           1 | 2024-05-01 | 13:00:00 |
++---------+----------+--------------+-------------+------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> -- VDL commands
+mysql> CREATE VIEW Voter_Details AS
+    -> SELECT Voter_Name, Age, Constituency_Name, State
+    -> FROM Voter
+    -> JOIN Constituency ON Voter.Constituency_ID = Constituency.Constituency_ID;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> describe Voter_Details;
++-------------------+-------------+------+-----+---------+-------+
+| Field             | Type        | Null | Key | Default | Extra |
++-------------------+-------------+------+-----+---------+-------+
+| Voter_Name        | varchar(50) | NO   |     | NULL    |       |
+| Age               | int         | YES  |     | NULL    |       |
+| Constituency_Name | varchar(50) | NO   |     | NULL    |       |
+| State             | varchar(50) | NO   |     | NULL    |       |
++-------------------+-------------+------+-----+---------+-------+
+4 rows in set (0.01 sec)
+
+mysql> SELECT * FROM Voter_Details;
++------------+------+-------------------+-------------+
+| Voter_Name | Age  | Constituency_Name | State       |
++------------+------+-------------------+-------------+
+| John Doe   |   36 | Bengaluru Central | Karnataka   |
+| Jane Doe   |   30 | Mumbai South      | Maharashtra |
+| Raj Patel  |   35 | Kolkata North     | West Bengal |
+| Sara Khan  |   28 | Chennai North     | Tamil Nadu  |
+| Amit Kumar |   40 | Delhi South       | Delhi       |
++------------+------+-------------------+-------------+
+5 rows in set (0.03 sec)
+
+mysql> -- joins
+mysql> SELECT Voter.Voter_Name, Candidate.Candidate_Name, Party.Party_Name
+    -> FROM Voting_Record
+    -> JOIN Voter ON Voting_Record.Voter_ID = Voter.Voter_ID
+    -> JOIN Candidate ON Voting_Record.Candidate_ID = Candidate.Candidate_ID
+    -> JOIN Party ON Candidate.Party_ID = Party.Party_ID;
+Empty set (0.03 sec)
+
+mysql> SELECT Voter.Voter_Name, Candidate.Candidate_Name
+    -> FROM Voter
+    -> LEFT JOIN Voting_Record ON Voter.Voter_ID = Voting_Record.Voter_ID
+    -> LEFT JOIN Candidate ON Voting_Record.Candidate_ID = Candidate.Candidate_ID;
++------------+----------------+
+| Voter_Name | Candidate_Name |
++------------+----------------+
+| John Doe   | NULL           |
+| Jane Doe   | NULL           |
+| Raj Patel  | NULL           |
+| Sara Khan  | NULL           |
+| Amit Kumar | NULL           |
++------------+----------------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT V.Voter_Name, C.Constituency_Name
+    -> FROM Voter V
+    -> INNER JOIN Constituency C ON V.Constituency_ID = C.Constituency_ID;
++------------+-------------------+
+| Voter_Name | Constituency_Name |
++------------+-------------------+
+| John Doe   | Bengaluru Central |
+| Jane Doe   | Mumbai South      |
+| Raj Patel  | Kolkata North     |
+| Sara Khan  | Chennai North     |
+| Amit Kumar | Delhi South       |
++------------+-------------------+
+5 rows in set (0.01 sec)
+
+mysql> SELECT C.Candidate_Name, P.Party_Name
+    -> FROM Candidate C
+    -> LEFT JOIN Party P ON C.Party_ID = P.Party_ID;
++----------------+--------------------------+
+| Candidate_Name | Party_Name               |
++----------------+--------------------------+
+| Alice Smith    | Indian National Congress |
+| Bob Johnson    | Bharatiya Janata Party   |
+| Chandra Gupta  | Aam Aadmi Party          |
+| Divya Sharma   | Shiv Sena                |
+| Esha Reddy     | Trinamool Congress       |
++----------------+--------------------------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT C.Constituency_Name, A.Candidate_Name
+    -> FROM Constituency C
+    -> RIGHT JOIN Candidate A ON C.Constituency_ID = A.Constituency_ID;
++-------------------+----------------+
+| Constituency_Name | Candidate_Name |
++-------------------+----------------+
+| Bengaluru Central | Alice Smith    |
+| Mumbai South      | Bob Johnson    |
+| Kolkata North     | Chandra Gupta  |
+| Chennai North     | Divya Sharma   |
+| Delhi South       | Esha Reddy     |
++-------------------+----------------+
+5 rows in set (0.03 sec)
+
+mysql> -- subquery
+mysql> SELECT Constituency_Name
+    -> FROM Constituency
+    -> WHERE Constituency_ID = (SELECT Constituency_ID FROM Voting_Record GROUP BY Constituency_ID ORDER BY COUNT(*) DESC LIMIT 1);
++-------------------+
+| Constituency_Name |
++-------------------+
+| Bengaluru Central |
+| Mumbai South      |
+| Kolkata North     |
+| Chennai North     |
+| Delhi South       |
++-------------------+
+5 rows in set (0.01 sec)
+
+mysql> -- self join/ self query
+mysql> SELECT A.Voter_Name, B.Voter_Name
+    -> FROM Voter A, Voter B
+    -> WHERE A.Constituency_ID = B.Constituency_ID AND A.Voter_ID <> B.Voter_ID;
+Empty set (0.01 sec)
+
+mysql> -- aggregate functions
+mysql> SELECT Constituency.Constituency_Name, COUNT(Voter.Voter_ID) AS Voter_Count
+    -> FROM Voter
+    -> JOIN Constituency ON Voter.Constituency_ID = Constituency.Constituency_ID
+    -> GROUP BY Constituency.Constituency_Name;
++-------------------+-------------+
+| Constituency_Name | Voter_Count |
++-------------------+-------------+
+| Bengaluru Central |           1 |
+| Mumbai South      |           1 |
+| Kolkata North     |           1 |
+| Chennai North     |           1 |
+| Delhi South       |           1 |
++-------------------+-------------+
+5 rows in set (0.01 sec)
+
+mysql> -- pattern matching (like)
+mysql> SELECT Voter_Name
+    -> FROM Voter
+    -> WHERE Voter_Name LIKE 'A%';
++------------+
+| Voter_Name |
++------------+
+| Amit Kumar |
++------------+
+1 row in set (0.03 sec)
+
+mysql> -- where clause
+mysql> SELECT Voter_Name, Age
+    -> FROM Voter
+    -> WHERE Age > 30;
++------------+------+
+| Voter_Name | Age  |
++------------+------+
+| John Doe   |   36 |
+| Raj Patel  |   35 |
+| Amit Kumar |   40 |
++------------+------+
+3 rows in set (0.00 sec)
+
+mysql> -- having clause
+mysql> SELECT Constituency.Constituency_Name, COUNT(Voter.Voter_ID) AS Voter_Count
+    -> FROM Voter
+    -> JOIN Constituency ON Voter.Constituency_ID = Constituency.Constituency_ID
+    -> GROUP BY Constituency.Constituency_Name
+    -> HAVING COUNT(Voter.Voter_ID) > 2;
+Empty set (0.01 sec)
+
+mysql> -- order by clause
+mysql> SELECT Voter_Name, Age
+    -> FROM Voter
+    -> ORDER BY Age DESC;
++------------+------+
+| Voter_Name | Age  |
++------------+------+
+| Amit Kumar |   40 |
+| John Doe   |   36 |
+| Raj Patel  |   35 |
+| Jane Doe   |   30 |
+| Sara Khan  |   28 |
++------------+------+
+5 rows in set (0.00 sec)
+
+mysql> -- distinct and limit
+mysql> SELECT DISTINCT Party_ID
+    -> FROM Candidate
+    -> LIMIT 3;
++----------+
+| Party_ID |
++----------+
+|        1 |
+|        2 |
+|        3 |
++----------+
+3 rows in set (0.01 sec)
+
+mysql> -- cartesian product
+mysql> SELECT Voter.Voter_Name, Party.Party_Name
+    -> FROM Voter, Party;
++------------+--------------------------+
+| Voter_Name | Party_Name               |
++------------+--------------------------+
+| Amit Kumar | Indian National Congress |
+| Sara Khan  | Indian National Congress |
+| Raj Patel  | Indian National Congress |
+| Jane Doe   | Indian National Congress |
+| John Doe   | Indian National Congress |
+| Amit Kumar | Bharatiya Janata Party   |
+| Sara Khan  | Bharatiya Janata Party   |
+| Raj Patel  | Bharatiya Janata Party   |
+| Jane Doe   | Bharatiya Janata Party   |
+| John Doe   | Bharatiya Janata Party   |
+| Amit Kumar | Aam Aadmi Party          |
+| Sara Khan  | Aam Aadmi Party          |
+| Raj Patel  | Aam Aadmi Party          |
+| Jane Doe   | Aam Aadmi Party          |
+| John Doe   | Aam Aadmi Party          |
+| Amit Kumar | Shiv Sena                |
+| Sara Khan  | Shiv Sena                |
+| Raj Patel  | Shiv Sena                |
+| Jane Doe   | Shiv Sena                |
+| John Doe   | Shiv Sena                |
+| Amit Kumar | Trinamool Congress       |
+| Sara Khan  | Trinamool Congress       |
+| Raj Patel  | Trinamool Congress       |
+| Jane Doe   | Trinamool Congress       |
+| John Doe   | Trinamool Congress       |
++------------+--------------------------+
+25 rows in set (0.01 sec)
